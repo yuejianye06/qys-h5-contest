@@ -82,15 +82,15 @@ body{
   display:none;flex-direction:column;padding:12px 12px 16px;
 }
 #dialog.active{display:flex}
-#dialog .portrait{position:absolute;left:14px;bottom:118px;width:78px;height:78px;z-index:61}
+#dialog .portrait{width:34px;height:34px;flex:0 0 34px;margin-left:6px;z-index:61}
 #dialog .box{
   background:rgba(255,253,246,.97);border:2px solid var(--green);
   border-radius:18px;padding:14px 14px 12px;box-shadow:0 -2px 16px rgba(0,0,0,.25);
   min-height:150px;display:flex;flex-direction:column;
 }
 #dialog .name{
-  display:inline-block;background:var(--green);color:#fff;font-weight:700;
-  font-size:13px;padding:3px 12px;border-radius:999px;margin-bottom:8px;width:fit-content;
+  display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;font-weight:700;
+  font-size:13px;padding:3px 6px 3px 12px;border-radius:999px;margin-bottom:8px;width:fit-content;
 }
 #dialog .text{font-size:15px;line-height:1.75;flex:1;min-height:60px}
 #dialog .text .sel{color:var(--berry);font-weight:700}
@@ -145,6 +145,7 @@ body{
 /* 商店/背包条目 */
 .item{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:9px}
 .item .ii{width:38px;height:38px;flex:0 0 38px;background:var(--leaf2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px}
+.item .ii img{width:100%;height:100%;object-fit:contain;border-radius:10px}
 .item .it{flex:1}
 .item .it b{font-size:14px;display:block}
 .item .it span{font-size:11px;color:#8a806e}
@@ -175,6 +176,16 @@ body{
 .section-title{font-size:17px;font-weight:900;color:var(--green);margin:4px 0 12px;display:flex;align-items:center;gap:6px}
 .empty{color:#a89e88;text-align:center;font-size:13px;padding:30px 0}
 small.muted{color:#a89e88}
+.walk-scene{position:absolute;inset:0;z-index:75;display:none;overflow:hidden;background:linear-gradient(180deg,#b9d99b 0%,#eaf3df 54%,#8fb36b 55%,#628653 100%);text-align:center}
+.walk-scene.active{display:block;animation:walkSceneIn .25s ease-out}
+.walk-scene .sun{position:absolute;top:13%;right:16%;width:48px;height:48px;border-radius:50%;background:#f2c992;box-shadow:0 0 0 12px rgba(242,201,146,.22)}
+.walk-scene .mountain{position:absolute;left:-8%;right:-8%;bottom:43%;height:28%;background:#5f9565;clip-path:polygon(0 100%,18% 36%,30% 75%,48% 8%,67% 72%,84% 30%,100% 100%)}
+.walk-scene .path{position:absolute;left:-10%;right:-10%;bottom:-4%;height:52%;background:#c89a67;clip-path:polygon(42% 0,58% 0,91% 100%,9% 100%)}
+.walk-scene .walker{position:absolute;left:-120px;bottom:21%;width:112px;height:auto;animation:walkAcross 1.35s linear forwards}
+.walk-scene .walk-title{position:absolute;top:12%;left:0;right:0;color:#fff;font-size:20px;font-weight:900;text-shadow:0 2px 4px rgba(27,67,38,.35)}
+.walk-scene .walk-route{position:absolute;top:18%;left:0;right:0;color:#2e6b43;font-size:14px;font-weight:700}
+@keyframes walkSceneIn{from{opacity:0}to{opacity:1}}
+@keyframes walkAcross{from{transform:translateX(0) scale(.88)}to{transform:translateX(calc(100vw + 170px)) scale(1)}}
 </style>
 </head>
 <body>
@@ -183,7 +194,7 @@ small.muted{color:#a89e88}
   <div id="topbar">
     <div class="t"><span class="t-ico">日</span><b class="t-day" id="tDay">第1天</b></div>
     <div class="t"><span class="t-ico">光</span><div class="t-bar"><i id="tSun"></i></div><span id="tSunTxt">100</span></div>
-    <div class="t"><span class="t-ico">果</span><b id="tMoney">0</b></div>
+    <div class="t"><span class="t-ico">钱</span><b id="tMoney">0</b><span>铜</span></div>
     <div class="t"><span class="t-ico">枣</span><b id="tZao">0</b></div>
     <button id="sun-btn" onclick="goBed()">回屋睡觉</button>
   </div>
@@ -197,6 +208,7 @@ small.muted{color:#a89e88}
       <p>齐云山深山里的小野人，踏上采枣做糕的野果之旅。<br>集齐五福果，把深山的美味带出大山。</p>
       <div><span class="badge">互动叙事</span><span class="badge">经营模拟</span><span class="badge">迷宫冒险</span></div>
       <div style="margin-top:26px"><button class="btn berry" onclick="startGame()">开始冒险</button></div>
+      <div id="resumeGame" style="margin-top:10px;display:none"><button class="btn gray" onclick="resumeGame()">继续上次进度</button></div>
     </div>
   </div>
 
@@ -210,9 +222,9 @@ small.muted{color:#a89e88}
         <div class="wufu" id="vWufu"></div>
       </div>
       <div class="menu-card" onclick="goPick()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg></div><div class="mc"><b>出门采枣</b><span>选一条山路，去深山里摘南酸枣</span></div><div class="arr">›</div></div>
+      <div class="menu-card" onclick="goHomeFromVillage()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></div><div class="mc"><b>回家休息</b><span>今天先回村屋里，明天再出发</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goWork()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M4 10h16M4 14h16M6 6h12M6 18h12"/></svg></div><div class="mc"><b>工坊做糕</b><span>把酸枣做成酸甜韧滑的枣糕</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goShop()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M3 9l2-5h14l2 5M3 9h18M5 9v11a1 1 0 001 1h12a1 1 0 001-1V9M9 9v2a3 3 0 006 0V9"/></svg></div><div class="mc"><b>山间小店</b><span>卖枣卖糕，换钱买工具</span></div><div class="arr">›</div></div>
-      <div class="menu-card" onclick="goMap()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6l6-2zM9 4v14M15 6v14"/></svg></div><div class="mc"><b>小地图</b><span id="mapHint">展开看看走过的山路</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goBag()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M6 7h12l1 13H5L6 7zM9 7a3 3 0 016 0"/></svg></div><div class="mc"><b>背包图鉴</b><span>查看收集的材料、宠物和五福</span></div><div class="arr">›</div></div>
     </div>
   </div>
@@ -254,21 +266,10 @@ small.muted{color:#a89e88}
     </div>
   </div>
 
-  <!-- 小地图 -->
-  <div class="screen" id="s-map">
-    <div class="screen-scroll">
-      <div class="section-title">齐云山 · 探险小地图</div>
-      <div class="stage">记录你走过的山路，去过的地点会在地图上点亮。</div>
-      <div id="mapWrap"></div>
-      <div style="margin-top:10px"><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
-    </div>
-  </div>
-
   <!-- 对话框 -->
   <div id="dialog">
-    <div class="portrait" id="dPortrait"></div>
     <div class="box">
-      <div class="name" id="dName">小野人</div>
+      <div class="name"><span id="dName">小野人</span><div class="portrait" id="dPortrait"></div></div>
       <div class="text" id="dText"></div>
       <div class="opts" id="dOpts"></div>
       <div class="hint" id="dHint">点击继续</div>
@@ -290,6 +291,14 @@ small.muted{color:#a89e88}
   </div>
 
   <div id="toast"></div>
+  <div class="walk-scene" id="walkScene">
+    <div class="sun"></div>
+    <div class="mountain"></div>
+    <div class="path"></div>
+    <div class="walk-title">小野人正在进山</div>
+    <div class="walk-route" id="walkRoute"></div>
+    <img class="walker" src="assets/xiaoyeren.png" alt="小野人行走中">
+  </div>
 </div>
 <script>
 /* ========== 数据定义 ========== */
@@ -301,9 +310,19 @@ const ITEMS = {
   muchai:{name:"干木柴",icon:"柴",desc:"生火做糕的柴火",type:"材料"},
   zaogao:{name:"原味枣糕",icon:"糕",desc:"酸甜韧滑，绿标认证",type:"成品",value:12},
   wufugao:{name:"五福枣糕",icon:"福",desc:"集五福而做的传世枣糕",type:"成品",value:60},
+  zaodong:{name:"南酸枣冻",icon:"冻",desc:"酸甜弹润的南酸枣冻",type:"成品",value:16,image:"assets/suanzaodong.png"},
+  zisuanzaoli:{name:"紫苏南酸枣粒",icon:"紫",desc:"紫苏清香，酸甜有嚼劲",type:"成品",value:14,image:"assets/zisuanzaoli.png"},
+  chenpizaoli:{name:"陈皮南酸枣粒",icon:"陈",desc:"陈皮回甘，越嚼越香",type:"成品",value:14,image:"assets/chenpizaoli.png"},
+  yezaogao:{name:"椰果南酸枣糕",icon:"椰",desc:"椰果颗粒与枣糕的清甜搭配",type:"成品",value:18,image:"assets/yezhao.png"},
+  baixiangguogao:{name:"百香果南酸枣糕",icon:"百",desc:"百香果酸香，风味明亮",type:"成品",value:18,image:"assets/baixiangguo.png"},
+  mangguogao:{name:"芒果南酸枣糕",icon:"芒",desc:"芒果果香，酸甜柔韧",type:"成品",value:18,image:"assets/mangguo.png"},
+  lanmeigao:{name:"蓝莓南酸枣糕",icon:"蓝",desc:"蓝莓果香，酸甜细腻",type:"成品",value:20,image:"assets/lanmei.png"},
   zhulan:{name:"竹篮",icon:"篮",desc:"采枣量+2，背着去山里",type:"工具"},
   shimo:{name:"石磨",icon:"磨",desc:"做糕品质+1，工坊必备",type:"工具"},
   zhaopai:{name:"招牌",icon:"牌",desc:"小店更热闹，客单价+2",type:"工具"},
+  lengcangxiang:{name:"冷藏木箱",icon:"冷",desc:"解锁南酸枣冻制作",type:"工具"},
+  guolimoju:{name:"果粒模具",icon:"模",desc:"解锁紫苏、陈皮南酸枣粒制作",type:"工具"},
+  tiaoweishao:{name:"多味拌料勺",icon:"勺",desc:"解锁四种多口味南酸枣糕制作",type:"工具"},
   pet_niao:{name:"山雀",icon:"鸟",desc:"宠物，采枣时有几率多捡一颗",type:"宠物"},
   pet_songshu:{name:"松鼠",icon:"鼠",desc:"宠物，做糕时节省柴火",type:"宠物"},
   pet_lu:{name:"小鹿",icon:"鹿",desc:"宠物，山路走得快，省时间",type:"宠物"},
@@ -325,7 +344,9 @@ const ROUTE_TMP = [
 ];
 const PET_BY_ROUTE = {0:"pet_niao",1:"pet_songshu",2:"pet_lu"};
 const SPECIAL_BY_ROUTE = {0:"jinzao",1:"jinghua",2:"jinzao"};
+const PET_FOOD = {pet_niao:"zao",pet_songshu:"tang",pet_lu:"fengmi"};
 
+const SAVE_KEY = "xiaoyeren-save-v1";
 let S = null;   // 游戏状态
 let miniState = null; // 华容道状态
 let pendingAction = null; // 解密/事件完成后回调
@@ -333,16 +354,37 @@ let pendingAction = null; // 解密/事件完成后回调
 function freshState(){
   return {
     day:1, sun:100, money:0, started:false, ended:false,
-    inv:{zao:0,tang:0,fengmi:0,guojiao:0,muchai:0,zaogao:0,wufugao:0},
-    tools:{zhulan:false,shimo:false,zhaopai:false},
-    pets:[], specials:[], wufu:[],
-    map:[], visited:{}, routesTaken:0,
+    inv:{zao:0,tang:0,fengmi:0,guojiao:0,muchai:0,zaogao:0,wufugao:0,zaodong:0,zisuanzaoli:0,chenpizaoli:0,yezaogao:0,baixiangguogao:0,mangguogao:0,lanmeigao:0},
+    tools:{zhulan:false,shimo:false,zhaopai:false,lengcangxiang:false,guolimoju:false,tiaoweishao:false},
+    pets:[], activePet:null, specials:[], wufu:[],
+    routesTaken:0, outingChoices:0,
     madeTotal:0, soldTotal:0, birdCount:0,
   };
 }
+function saveGame(){
+  if(!S)return;
+  localStorage.setItem(SAVE_KEY,JSON.stringify(S));
+  toast("数据已保存");
+}
+function resumeGame(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");
+    if(!saved||!saved.started){toast("没有找到可继续的进度");return;}
+    S=saved;
+    ["zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].forEach(k=>{if(!(k in S.inv))S.inv[k]=0;});
+    ["lengcangxiang","guolimoju","tiaoweishao"].forEach(k=>{if(!(k in S.tools))S.tools[k]=false;});
+    if(!("activePet" in S))S.activePet=S.pets[0]||null;
+    show("s-village");
+    renderVillage();
+    toast("已恢复上次进度");
+  }catch(e){
+    localStorage.removeItem(SAVE_KEY);
+    toast("存档读取失败");
+  }
+}
 function inv(){return S.inv}
 function hasTool(k){return S.tools[k]}
-function hasPet(k){return S.pets.includes(k)}
+function hasPet(k){return S.activePet===k}
 function pickBerryBase(){return 3 + (hasTool("zhulan")?2:0)}
 function addItem(k,n){S.inv[k]=(S.inv[k]||0)+n}
 
@@ -351,6 +393,7 @@ const $=id=>document.getElementById(id);
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800);}
 function show(scr){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(scr).classList.add("active");}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function itemIcon(k){return ITEMS[k]&&ITEMS[k].image?`<img src="${ITEMS[k].image}" alt="${esc(ITEMS[k].name)}">`:ITEMS[k]?ITEMS[k].icon:"?";}
 
 /* ========== 顶部栏 ========== */
 function renderTop(){
@@ -416,8 +459,9 @@ $("dialog").addEventListener("click",function(){
 });
 
 /* ========== 特写插画 CG ========== */
-function showCG(svg,title,sub,onNext){
-  $("cg").innerHTML=`${svg}<div class="ct">${esc(title)}</div><div class="cs">${esc(sub)}</div><button class="btn berry" onclick="closeCG()">继续</button>`;
+function showCG(svg,title,sub,onNext,canSave){
+  const saveButton=canSave?`<button class="btn amber" onclick="saveGame()">保存数据</button>`:"";
+  $("cg").innerHTML=`${svg}<div class="ct">${esc(title)}</div><div class="cs">${esc(sub)}</div>${saveButton}<button class="btn berry" onclick="closeCG()">继续</button>`;
   $("cg").classList.add("active");
   cgNext=onNext||null;
 }
@@ -444,7 +488,6 @@ function renderVillage(){
   $("vSub").textContent=(S.ended?"你已完成五福枣糕之旅。":"这是南酸枣成熟的第"+S.day+"天，太阳正"+sunText()+"，去山里走走吧。");
   // 五福进度
   $("vWufu").innerHTML=WUFU.map(w=>`<div class="dot" style="background:${S.wufu.includes(w.n)?"":"#d8d0c0"}${S.wufu.includes(w.n)?w.c:""}"></div>`).join("");
-  $("mapHint").textContent=S.map.length>0?("已走过 "+S.map.length+" 段山路"):"还没有出门记录";
   $("sun-btn").style.display=(S.started&&!S.ended)?"inline-block":"none";
 }
 
@@ -484,42 +527,76 @@ function endingGood(){
 let chosenRoute=null,routePool=[];
 function goPick(){
   if(S.ended)return;
+  if(S.sun<=0){showNextRoute();return;}
   if(S.sun<=10){toast("天快黑了，今天先别进山了");return;}
+  S.outingChoices=0;
+  showNextRoute();
+}
+function showNextRoute(){
   // 随机挑2-4条路线
   const tmpl=ROUTE_TMP.slice().sort(()=>Math.random()-0.5);
   const count=2+Math.floor(Math.random()*3); // 2~4
   chosenRoute=null;
-  routePool=tmpl.slice(0,count).map((r,i)=>({...r,idx:i}));
+  routePool=S.sun<=0?[]:tmpl.slice(0,count).map((r,i)=>({...r,idx:i}));
+  const homeOption=`<div class="route-card" onclick="goHome()"><span class="rp">${S.sun<=0?"光已耗尽":"随时返回"}</span><div class="rn">回家休息</div><div class="rd">${S.sun<=0?"今天先回村，路上没有额外收获":"今天先回村，明天再继续探山"}</div></div>`;
   $("routeList").innerHTML=routePool.map(r=>`
     <div class="route-card" onclick="chooseRoute(${r.idx})">
       <span class="rp">可能遇到惊喜</span>
       <div class="rn">${esc(r.n)}</div>
       <div class="rd">${esc(r.d)}</div>
-    </div>`).join("");
+    </div>`).join("")+homeOption;
   show("s-route");
 }
-function chooseRoute(idx){
-  // 记录走过这条路
-  const r=routePool.find(x=>x.idx===idx);
-  S.map.push(r?r.n:"无名山路");
-  S.routesTaken++;
-  S.sun-=18+Math.random()*8; // 进山消耗时间
-  if(hasPet("pet_lu"))S.sun+=6;
-  resolveRouteEvent(idx, ()=>{
-    // 事件后进入采枣结果
-    finishPick();
-  });
+function goHomeFromVillage(){
+  if(S.ended)return;
+  showDialog([
+    {who:"小野人",text:"今天的山路走累了，先回家休息一会儿。"},
+    {who:"小野人",text:"明天再背着竹篮，去寻找更甜的南酸枣。"}
+  ],null,()=>backVillage(true,"已回到村庄，先休息再说。"));
 }
-// 概率：无事20% 材料60% 宠物9% 特殊物品1%
+function goHome(){
+  showDialog([
+    {who:"小野人",text:S.sun>0?"今天还有光亮，但我也该回家了。":"天色完全暗下来了，今天就走到这里。"},
+    {who:"小野人",text:"回家休息，明天再出发吧。"}
+  ],null,()=>backVillage(true,S.sun>0?"已回到村庄，今天先收工休息。":"已回到村庄，今天没有额外收获。"));
+}
+function showWalkScene(routeName,next){
+  $("walkRoute").textContent="前往："+routeName;
+  $("walkScene").classList.add("active");
+  setTimeout(()=>{
+    $("walkScene").classList.remove("active");
+    next();
+  },1350);
+}
+function chooseRoute(idx){
+  if(S.outingChoices>=5)return;
+  const r=routePool.find(x=>x.idx===idx);
+  S.outingChoices++;
+  S.routesTaken++;
+  S.sun=Math.max(0,S.sun-(12+Math.random()*5)); // 进山消耗时间
+  if(hasPet("pet_lu"))S.sun+=6;
+  (()=>{
+    if(S.sun<=0){goHome();return;}
+    showWalkScene(r?r.n:"深山小路",()=>resolveRouteEvent(idx, ()=>{
+      // 事件后进入采枣结果
+      finishPick();
+    }));
+  })();
+}
+// 概率：华容道特殊事件20% 柴火事件20% 材料40% 宠物9% 特殊物品1%
 function resolveRouteEvent(routeIdx,cb){
   const r=Math.random()*100;
-  if(r<20){ // 无事
-    showDialog([
-      {who:"小野人",text:"这条路安安静静的，只有风吹树叶的沙沙声。"},
-      {who:"小野人",text:"没遇上什么特别的事，继续往前找枣吧。"}
-    ],null,cb);
-  }else if(r<80){ // 材料 60%
-    const mats=["zao","tang","fengmi","guojiao","muchai"];
+  if(r<20){ // 特殊事件：华容道
+    miniOpen(()=>{
+      showDialog([
+        {who:"小野人",text:"前方的石锁挡住了山路！把数字石块排好，才能继续前进。"},
+        {who:"小野人",text:"石锁打开了！继续进山找枣吧。"}
+      ],null,cb);
+    });
+  }else if(r<40){
+    woodGatherEvent(cb);
+  }else if(r<80){ // 木柴只通过商店或柴火事件获得
+    const mats=["zao","tang","fengmi","guojiao"];
     const gain=mats[Math.floor(Math.random()*mats.length)];
     const qty=gain==="zao"?pickBerryBase():(1+Math.floor(Math.random()*2));
     addItem(gain,qty);
@@ -532,9 +609,7 @@ function resolveRouteEvent(routeIdx,cb){
     if(S.pets.includes(pk)){ // 已拥有则换材料
       addItem("zao",2);showDialog([{who:"小野人",text:"遇见了一只老熟人，它送你两颗南酸枣。"}],null,cb);
     }else{
-      S.pets.push(pk);
-      const pn=ITEMS[pk].name;
-      showDialog([{who:"小野人",text:"一只"+pn+"从树丛里探出头来，一点也不怕生。"},{who:"小野人",text:"它愿意跟着你走！以后"+ITEMS[pk].desc+"。"}],null,cb);
+      tamePet(pk,cb);
     }
   }else{ // 特殊物品 1%
     const sp=SPECIAL_BY_ROUTE[routeIdx%3];
@@ -542,21 +617,62 @@ function resolveRouteEvent(routeIdx,cb){
     else{S.specials.push(sp);showDialog([{who:"小野人",text:"天啊！你在这里发现了——"+ITEMS[sp].name+"！"},{who:"小野人",text:"这是千年难遇的稀罕物，"+ITEMS[sp].desc+"。"}],null,cb);}
   }
 }
+function woodGatherEvent(cb){
+  showDialog([
+    {who:"小野人",text:"前面的林间落着几根干燥的树枝，正好可以带回去生火。"},
+    {who:"小野人",text:"停下来捡柴火会多花一段路的时间，要不要现在动手？"}
+  ],[
+    {text:"继续向前",cb:()=>{closeDialog();cb();}},
+    {text:"停下捡拾柴火（额外消耗一条路径时间）",cb:()=>{
+      const cost=12+Math.floor(Math.random()*5);
+      S.sun=Math.max(0,S.sun-cost);
+      addItem("muchai",2);
+      renderTop();
+      showDialog([{who:"小野人",text:"柴火捡好了！获得干木柴 ×2，额外耗时"+cost+"点。"}],null,cb);
+    }}
+  ]);
+}
+function tamePet(pk,cb){
+  const food=PET_FOOD[pk];
+  const pn=ITEMS[pk].name;
+  const foodName=ITEMS[food].name;
+  showDialog([
+    {who:"小野人",text:"一只"+pn+"从树丛里探出头来，似乎在等你拿出喜欢的食物。"},
+    {who:"小野人",text:"它最喜欢吃"+foodName+"。"}
+  ],[
+    {text:"拿出"+foodName+"（"+S.inv[food]+"）",cb:()=>feedPet(pk,food,cb)},
+    {text:"先不驯服",cb:()=>{closeDialog();cb();}}
+  ]);
+}
+function feedPet(pk,food,cb){
+  if(S.inv[food]<=0){toast("没有足够的"+ITEMS[food].name);return;}
+  S.inv[food]--;
+  S.pets.push(pk);
+  if(!S.activePet)S.activePet=pk;
+  closeDialog();
+  toast(S.activePet===pk?"驯服成功，已携带"+ITEMS[pk].name:"驯服成功，可在背包切换");
+  cb();
+}
 
 /* ========== 采枣 + 飞鸟事件 ========== */
 function finishPick(){
   renderTop();
-  // 超时检查：若返回时已到黄昏以下(<=18)，触发飞鸟抢枣
-  if(S.sun<=18){
-    birdSteal();
+  // 光亮耗尽时直接回家，不再生成额外收获
+  if(S.sun<=0){
+    goHome();
     return;
   }
   const n=pickBerryBase()+Math.floor(Math.random()*2);
   addItem("zao",n);
   renderTop();
-  showCG(berrySVG(),"满载而归","你采到了 "+n+" 颗南酸枣。枣儿酸甜，趁天色还早赶回村庄。",()=>{
-    backVillage(true);
-  });
+  if(S.outingChoices<5){
+    showNextRoute();
+  }else{
+    showDialog([
+      {who:"小野人",text:"前面的路已经走到终点了，今天的探索先到这里。"},
+      {who:"小野人",text:"早点回到村庄吧，带着收获回去做枣糕！"}
+    ],null,()=>backVillage(true,"今天进山的5条路都走过了。"));
+  }
 }
 function berrySVG(){
   return `<svg viewBox="0 0 200 130" width="230"><rect width="200" height="130" fill="#3E7C4F" rx="14"/><circle cx="70" cy="60" r="26" fill="#B3412F"/><circle cx="120" cy="55" r="22" fill="#E0784F"/><circle cx="95" cy="80" r="18" fill="#8FBF6B"/></svg>`;
@@ -586,18 +702,24 @@ function goWork(){
   renderWork();show("s-work");
 }
 function renderWork(){
-  const wood=hasPet("pet_songshu");
-  const woodNeed=wood?1:2;
+  const woodNeed=hasPet("pet_songshu")?1:2;
   const recipes=[
-    {name:"原味枣糕",need:{zao:3,wood:woodNeed},make:function(){addItem("zaogao",1);S.madeTotal++;toast("原味枣糕做好了");}},
-    {name:"五福枣糕",need:{zao:8,wood:woodNeed,wufu:5},make:function(){addItem("wufugao",1);S.madeTotal++;toast("五福枣糕做好了");}},
+    {k:"zaogao",name:"原味枣糕",need:{zao:3,wood:woodNeed}},
+    {k:"wufugao",name:"五福枣糕",need:{zao:8,wood:woodNeed,wufu:5}},
+    {k:"zaodong",name:"南酸枣冻",need:{zao:3,fengmi:1},tool:"lengcangxiang"},
+    {k:"zisuanzaoli",name:"紫苏南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},
+    {k:"chenpizaoli",name:"陈皮南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},
+    {k:"yezaogao",name:"椰果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},
+    {k:"baixiangguogao",name:"百香果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},
+    {k:"mangguogao",name:"芒果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},
+    {k:"lanmeigao",name:"蓝莓南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},
   ];
   $("workList").innerHTML=recipes.map(r=>{
     const enough=Object.entries(r.need).every(([k,v])=>{
       if(k==="wufu")return S.wufu.length>=v;
       if(k==="wood")return S.inv.muchai>=v;
       return S.inv[k]>=v;
-    });
+    })&&(!r.tool||hasTool(r.tool));
     const needStr=Object.entries(r.need).map(([k,v])=>{
       let have,label;
       if(k==="wufu"){have=S.wufu.length;label="五福果";}
@@ -605,16 +727,22 @@ function renderWork(){
       else{have=S.inv[k];label=ITEMS[k].name;}
       return `<span class="chip ${have>=v?"":"berry"}">${label} ${have}/${v}</span>`;
     }).join("");
-    return `<div class="card"><h3>${r.name}</h3><div class="res-line">${needStr}</div>
-      <button class="btn ${enough?"amber":"gray"} sm" style="margin-top:10px" ${enough?"":"disabled"} onclick="makeWork('${r.name}')">开始制作</button></div>`;
+    const toolStr=r.tool?`<span class="chip ${hasTool(r.tool)?"":"berry"}">${ITEMS[r.tool].name}${hasTool(r.tool)?"已备":"未购"}</span>`:"";
+    return `<div class="card"><h3>${r.name}</h3><div class="res-line">${needStr}</div><div class="res-line">${toolStr}</div>
+      <button class="btn ${enough?"amber":"gray"} sm" style="margin-top:10px" ${enough?"":"disabled"} onclick="makeWork('${r.k}')">开始制作</button></div>`;
   }).join("");
 }
-function makeWork(name){
+function makeWork(k){
   // 触发华容道解密（制作过程）
-  pendingAction=name;
+  const woodNeed=hasPet("pet_songshu")?1:2;
+  const recipes={zaogao:{name:"原味枣糕",need:{zao:3,wood:woodNeed}},wufugao:{name:"五福枣糕",need:{zao:8,wood:woodNeed,wufu:5}},zaodong:{name:"南酸枣冻",need:{zao:3,fengmi:1},tool:"lengcangxiang"},zisuanzaoli:{name:"紫苏南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},chenpizaoli:{name:"陈皮南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},yezaogao:{name:"椰果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},baixiangguogao:{name:"百香果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},mangguogao:{name:"芒果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},lanmeigao:{name:"蓝莓南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"}}[k];
+  if(!recipes[k]||recipes[k].tool&&!hasTool(recipes[k].tool)){toast("还缺少制作工具");return;}
+  pendingAction=k;
   miniOpen(()=>{
-    if(name==="原味枣糕"){if(S.inv.zao<3||S.inv.muchai<1){toast("材料不足");return;}S.inv.zao-=3;S.inv.muchai-=1;addItem("zaogao",1);S.madeTotal++;toast("原味枣糕做好了");}
-    else if(name==="五福枣糕"){if(S.inv.zao<8||S.inv.muchai<1||S.wufu.length<5){toast("材料不足");return;}S.inv.zao-=8;S.inv.muchai-=1;addItem("wufugao",1);S.madeTotal++;toast("五福枣糕做好了");}
+    const recipe=recipes[k],need=recipe.need;
+    if(S.inv.zao<(need.zao||0)||S.inv.muchai<(need.wood||0)||S.inv.fengmi<(need.fengmi||0)||S.inv.tang<(need.tang||0)||(need.wufu&&S.wufu.length<need.wufu)){toast("材料不足");return;}
+    Object.entries(need).forEach(([key,value])=>{if(key==="wood")S.inv.muchai-=value;else if(key!=="wufu")S.inv[key]-=value;});
+    addItem(k,1);S.madeTotal++;toast(recipe.name+"做好了");
     renderWork();renderTop();
   });
 }
@@ -633,7 +761,7 @@ function miniOpen(onDone){
     const t=nbs[Math.floor(Math.random()*nbs.length)];
     [arr[hole],arr[t]]=[arr[t],arr[hole]];hole=t;
   }
-  miniState={arr,hole,onDone,moves:0};
+  miniState={arr,hole,onDone,moves:0,timeSpent:0};
   renderMini();
   $("mini").classList.add("active");
 }
@@ -647,6 +775,10 @@ function miniMove(i){
   const r=Math.floor(i/3),c=i%3,hr=Math.floor(m.hole/3),hc=m.hole%3;
   if(Math.abs(r-hr)+Math.abs(c-hc)!==1)return;
   [m.arr[m.hole],m.arr[i]]=[m.arr[i],m.arr[m.hole]];m.hole=i;m.moves++;
+  const timeCost=Math.min(35-m.timeSpent,1);
+  S.sun=Math.max(0,S.sun-timeCost);
+  m.timeSpent+=timeCost;
+  renderTop();
   renderMini();
   const solved=[1,2,3,4,5,6,7,8,0];
   if(m.arr.every((v,j)=>v===solved[j])){
@@ -676,6 +808,9 @@ function renderShop(){
   if(S.inv.zao>0)sellHTML+=`<div class="item"><div class="ii">枣</div><div class="it"><b>南酸枣</b><span>卖 3 铜板/颗</span></div><div class="in">×${S.inv.zao}</div><button class="btn berry sm" onclick="sell('zao',3)">卖</button></div>`;
   if(S.inv.zaogao>0)sellHTML+=`<div class="item"><div class="ii">糕</div><div class="it"><b>原味枣糕</b><span>卖 ${ITEMS.zaogao.value} 铜板/块</span></div><div class="in">×${S.inv.zaogao}</div><button class="btn berry sm" onclick="sell('zaogao',${ITEMS.zaogao.value})">卖</button></div>`;
   if(S.inv.wufugao>0)sellHTML+=`<div class="item"><div class="ii">福</div><div class="it"><b>五福枣糕</b><span>卖 ${ITEMS.wufugao.value} 铜板/块</span></div><div class="in">×${S.inv.wufugao}</div><button class="btn berry sm" onclick="sell('wufugao',${ITEMS.wufugao.value})">卖</button></div>`;
+  ["zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].forEach(k=>{
+    if(S.inv[k]>0)sellHTML+=`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>卖 ${ITEMS[k].value} 铜板/份</span></div><div class="in">×${S.inv[k]}</div><button class="btn berry sm" onclick="sell('${k}',${ITEMS[k].value})">卖</button></div>`;
+  });
   if(S.specials.includes("jinghua"))sellHTML+=`<div class="item"><div class="ii">晶</div><div class="it"><b>野果VC精华</b><span>卖 ${ITEMS.jinghua.value} 铜板</span></div><div class="in">×1</div><button class="btn berry sm" onclick="sellSpecial('jinghua')">卖</button></div>`;
   // 买入项：材料+工具
   const buys=[
@@ -686,11 +821,14 @@ function renderShop(){
     {k:"zhulan",name:"竹篮",price:15,need:true,desc:"采枣量+2"},
     {k:"shimo",name:"石磨",price:20,need:true,desc:"做糕更顺"},
     {k:"zhaopai",name:"招牌",price:25,need:true,desc:"小店客单价+2"},
+    {k:"lengcangxiang",name:"冷藏木箱",price:18,need:true,desc:"解锁南酸枣冻"},
+    {k:"guolimoju",name:"果粒模具",price:18,need:true,desc:"解锁紫苏、陈皮枣粒"},
+    {k:"tiaoweishao",name:"多味拌料勺",price:22,need:true,desc:"解锁四种多味枣糕"},
   ];
   const buyHTML=buys.map(b=>{
     const owned=hasTool(b.k);
     const label=owned?"已拥有":"购买";
-    return `<div class="item"><div class="ii">${ITEMS[b.k].icon}</div><div class="it"><b>${b.name}</b><span>${b.desc}</span></div>
+    return `<div class="item"><div class="ii">${itemIcon(b.k)}</div><div class="it"><b>${b.name}</b><span>${b.desc}</span></div>
       <div class="in">${b.need?"":""}${owned?"":b.price+" 铜"}</div>
       <button class="btn ${owned?"gray":"amber"} sm" ${owned?"disabled":""} onclick="buyTool('${b.k}',${b.price})">${label}</button></div>`;
   }).join("");
@@ -714,76 +852,48 @@ function sellSpecial(k){
   renderShop();
 }
 function buyTool(k,price){
-  if(hasTool(k))return;
+  const isTool=ITEMS[k].type==="工具";
+  if(isTool&&hasTool(k))return;
   if(S.money<price){toast("铜板不够");return;}
-  S.money-=price;S.tools[k]=true;
+  S.money-=price;
+  if(isTool){
+    S.tools[k]=true;
+  }else{
+    addItem(k,1);
+  }
   toast("购得"+ITEMS[k].name);
   renderShop();
 }
 
 /* ========== 背包图鉴 ========== */
 function goBag(){renderBag();show("s-bag");}
+function selectPet(k){
+  if(!S.pets.includes(k))return;
+  S.activePet=k;
+  toast("当前携带："+ITEMS[k].name);
+  renderBag();
+}
 function renderBag(){
   renderTop();
   let html="";
   const ownMats=["zao","tang","fengmi","guojiao","muchai"].filter(k=>S.inv[k]>0);
-  const ownProd=["zaogao","wufugao"].filter(k=>S.inv[k]>0);
-  const ownTools=["zhulan","shimo","zhaopai"].filter(k=>hasTool(k));
+  const ownProd=["zaogao","wufugao","zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].filter(k=>S.inv[k]>0);
+  const ownTools=["zhulan","shimo","zhaopai","lengcangxiang","guolimoju","tiaoweishao"].filter(k=>hasTool(k));
   const pets=S.pets.map(k=>k);
   const specials=S.specials;
   html+=`<div class="section-title">材料与成品</div>`;
-  const matsHTML=ownMats.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">×${S.inv[k]}</div></div>`).join("");
-  const prodHTML=ownProd.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">×${S.inv[k]}</div></div>`).join("");
+  const matsHTML=ownMats.map(k=>`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">×${S.inv[k]}</div></div>`).join("");
+  const prodHTML=ownProd.map(k=>`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">×${S.inv[k]}</div></div>`).join("");
   html+= (matsHTML+prodHTML)||`<div class="empty">背包还空着</div>`;
-  html+=`<div class="section-title" style="margin-top:14px">工具</div>`+(ownTools.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">已装备</div></div>`).join("")||`<div class="empty">还没有工具，去商店看看</div>`);
-  html+=`<div class="section-title" style="margin-top:14px">宠物伙伴</div>`+(pets.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">跟随中</div></div>`).join("")||`<div class="empty">还没有宠物伙伴</div>`);
+  html+=`<div class="section-title" style="margin-top:14px">工具</div>`+(ownTools.map(k=>`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">已装备</div></div>`).join("")||`<div class="empty">还没有工具，去商店看看</div>`);
+  html+=`<div class="section-title" style="margin-top:14px">宠物伙伴</div>`+(pets.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">${S.activePet===k?"携带中":"已收集"}</div><button class="btn ${S.activePet===k?"gray":"amber"} sm" ${S.activePet===k?"disabled":""} onclick="selectPet('${k}')">${S.activePet===k?"当前携带":"携带"}</button></div>`).join("")||`<div class="empty">还没有宠物伙伴</div>`);
   html+=`<div class="section-title" style="margin-top:14px">特殊物品</div>`+(specials.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">稀有</div></div>`).join("")||`<div class="empty">尚未发现稀有之物</div>`);
   html+=`<div class="section-title" style="margin-top:14px">五福收集</div><div class="card"><div class="row">${WUFU.map(w=>`<div style="text-align:center"><div class="dot" style="margin:0 auto 6px;background:${S.wufu.includes(w.n)?w.c:"#d8d0c0"};width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${S.wufu.includes(w.n)?"#fff":"#9a917e"};font-weight:700">${w.n}</div><small class="muted">${w.n}</small></div>`).join("")}</div><div style="text-align:center;margin-top:8px;font-weight:700;color:var(--green)">${S.wufu.length}/5</div></div>`;
   $("bagList").innerHTML=html;
 }
 
-/* ========== 小地图 ========== */
-function goMap(){renderMap();show("s-map");}
-function renderMap(){
-  renderTop();
-  const svg=`<svg class="map-svg" viewBox="0 0 400 260">
-    <rect width="400" height="260" fill="#FBF3E4"/>
-    <path d="M0 210 Q100 180 200 205 T400 200 L400 260 L0 260 Z" fill="#CFE4B8"/>
-    <path d="M0 220 Q120 200 240 218 T400 214" fill="#B8D99A"/>
-    ${landmarks()}
-    ${routePath()}
-    ${placeLabels()}
-  </svg>`;
-  $("mapWrap").innerHTML=svg+`<div class="map-legend">
-    <span class="chip">村庄(起点)</span><span class="chip">已走过的路</span><span class="chip berry">待探索</span>
-  </div>`;
-}
-const PLACES=[
-  {x:50,y:205,n:"小野村"},{x:200,y:160,n:"溪边"},{x:320,y:120,n:"密林"},{x:150,y:80,n:"岩崖"},{x:290,y:200,n:"石桥"}
-];
-function landmarks(){
-  return PLACES.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p.n==="小野村"?12:7}" fill="${p.n==="小野村"?"#B3412F":"#3E7C4F"}"/>`).join("");
-}
-function routePath(){
-  if(S.map.length===0)return `<text x="200" y="130" text-anchor="middle" fill="#a89e88" font-size="13">还没有进山记录，先去采枣吧</text>`;
-  // 用走过的路数连一些弧线
-  let path="";
-  let prev=PLACES[0];
-  const pts=PLACES.slice(1);
-  for(let i=0;i<S.map.length;i++){
-    const p=pts[i%pts.length];
-    const cx=(prev.x+p.x)/2, cy=(prev.y+p.y)/2-18;
-    path+=`<path d="M${prev.x} ${prev.y} Q${cx} ${cy} ${p.x} ${p.y}" fill="none" stroke="#E0784F" stroke-width="3" stroke-dasharray="0"/>`;
-    path+=`<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#fff" stroke="#E0784F" stroke-width="2"/>`;
-    prev=p;
-  }
-  return path;
-}
-function placeLabels(){
-  return PLACES.map(p=>`<text x="${p.x}" y="${p.y-14}" text-anchor="middle" fill="#4a4238" font-size="12" font-weight="700">${p.n}</text>`).join("");
-}
-
 /* ========== 启动 ========== */
+$("resumeGame").style.display=localStorage.getItem(SAVE_KEY)?"block":"none";
 show("s-intro");
 </script>
 </body>
