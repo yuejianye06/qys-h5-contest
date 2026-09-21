@@ -41,8 +41,7 @@ body{
 .t-bar{width:52px;height:8px;background:rgba(0,0,0,.3);border-radius:6px;overflow:hidden;position:relative}
 .t-bar i{display:block;height:100%;background:linear-gradient(90deg,#F2C992,#F0A35C);border-radius:6px;transition:width .4s}
 .t-ico{font-size:13px;width:16px;text-align:center}
-#sun-btn{margin-left:auto;font-size:12px;background:var(--berry);color:#fff;border:none;border-radius:999px;padding:3px 8px;font-weight:600;cursor:pointer}
-#sun-btn:disabled{opacity:.4;cursor:default}
+#buffStatus{display:flex;align-items:center;gap:4px;margin-left:auto;background:rgba(242,201,146,.22);padding:3px 7px;border-radius:999px;white-space:nowrap;font-size:11px}
 /* 屏幕容器 */
 .screen{position:absolute;inset:0;padding-top:52px;display:none;flex-direction:column}
 .screen.active{display:flex}
@@ -196,7 +195,7 @@ small.muted{color:#a89e88}
     <div class="t"><span class="t-ico">光</span><div class="t-bar"><i id="tSun"></i></div><span id="tSunTxt">100</span></div>
     <div class="t"><span class="t-ico">钱</span><b id="tMoney">0</b><span>铜</span></div>
     <div class="t"><span class="t-ico">枣</span><b id="tZao">0</b></div>
-    <button id="sun-btn" onclick="goBed()">回屋睡觉</button>
+    <div id="buffStatus" style="display:none"></div>
   </div>
 
   <!-- 开场 -->
@@ -222,10 +221,12 @@ small.muted{color:#a89e88}
         <div class="wufu" id="vWufu"></div>
       </div>
       <div class="menu-card" onclick="goPick()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg></div><div class="mc"><b>出门采枣</b><span>选一条山路，去深山里摘南酸枣</span></div><div class="arr">›</div></div>
-      <div class="menu-card" onclick="goHomeFromVillage()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></div><div class="mc"><b>回家休息</b><span>今天先回村屋里，明天再出发</span></div><div class="arr">›</div></div>
+      <div class="menu-card" onclick="goHomeFromVillage()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg></div><div class="mc"><b>回屋睡觉</b><span>今天先回村屋里，明天再出发</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goWork()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M4 10h16M4 14h16M6 6h12M6 18h12"/></svg></div><div class="mc"><b>工坊做糕</b><span>把酸枣做成酸甜韧滑的枣糕</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goShop()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M3 9l2-5h14l2 5M3 9h18M5 9v11a1 1 0 001 1h12a1 1 0 001-1V9M9 9v2a3 3 0 006 0V9"/></svg></div><div class="mc"><b>山间小店</b><span>卖枣卖糕，换钱买工具</span></div><div class="arr">›</div></div>
       <div class="menu-card" onclick="goBag()"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B43" stroke-width="2" stroke-linecap="round"><path d="M6 7h12l1 13H5L6 7zM9 7a3 3 0 016 0"/></svg></div><div class="mc"><b>背包图鉴</b><span>查看收集的材料、宠物和五福</span></div><div class="arr">›</div></div>
+      <div class="menu-card" onclick="goBuild()"><div class="ic">🔥</div><div class="mc"><b>营地建造</b><span>生火恢复光亮，升级竹篮，制作护具</span></div><div class="arr">›</div></div>
+      <div class="menu-card" onclick="goStats()"><div class="ic">📖</div><div class="mc"><b>冒险统计</b><span>查看进山记录与稀有事件收集</span></div><div class="arr">›</div></div>
     </div>
   </div>
 
@@ -264,6 +265,14 @@ small.muted{color:#a89e88}
       <div id="bagList"></div>
       <div style="margin-top:10px"><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
     </div>
+  </div>
+
+  <div class="screen" id="s-build">
+    <div class="screen-scroll"><div class="section-title">营地建造</div><div class="stage">木柴可以转化为真正的生存能力。每项建造只需一次投入。</div><div id="buildList"></div><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
+  </div>
+
+  <div class="screen" id="s-stats">
+    <div class="screen-scroll"><div class="section-title">冒险统计</div><div id="statsList"></div><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
   </div>
 
   <!-- 对话框 -->
@@ -326,25 +335,27 @@ const ITEMS = {
   pet_niao:{name:"山雀",icon:"鸟",desc:"宠物，采枣时有几率多捡一颗",type:"宠物"},
   pet_songshu:{name:"松鼠",icon:"鼠",desc:"宠物，做糕时节省柴火",type:"宠物"},
   pet_lu:{name:"小鹿",icon:"鹿",desc:"宠物，山路走得快，省时间",type:"宠物"},
-  jinzao:{name:"金色酸枣",icon:"金",desc:"百年一遇的稀有野果",type:"特殊"},
+  jinzao:{name:"金色酸枣",icon:"金",desc:"百年一遇的稀有野果，山间小店高价收购",type:"特殊",value:100},
+  huju:{name:"简易护具",icon:"盾",desc:"负面事件的光亮损失降低5点",type:"工具"},
   jinghua:{name:"野果VC精华",icon:"晶",desc:"富含多酚的精华，可高价售出",type:"特殊",value:30},
 };
 const WUFU = [
   {c:"#B3412F",n:"康"},{c:"#E0784F",n:"乐"},{c:"#8FBF6B",n:"安"},
   {c:"#F2C992",n:"丰"},{c:"#5A8FB0",n:"福"}
 ];
-// 路线模板（进山时随机挑2-4条）
+// 路线按类型绑定事件池，进山前主动选择方向
 const ROUTE_TMP = [
-  {n:"近山小径",d:"好走，但人多枣少"},
-  {n:"溪边古道",d:"沿溪而行，野蜂出没"},
-  {n:"密林深处",d:"路难走，枣最甜"},
-  {n:"岩崖窄路",d:"险，却藏着稀罕物"},
-  {n:"石桥野径",d:"过桥进深山"},
-  {n:"古木幽谷",d:"老树参天，山雀成群"}
+  {n:"采摘路线 · 溪边古道",type:"pick",d:"酸枣较多，适合稳定采摘"},
+  {n:"采摘路线 · 近山小径",type:"pick",d:"好走，但枣量普通"},
+  {n:"探索路线 · 岩崖窄路",type:"explore",d:"稀有事件更多，负面风险也更高"},
+  {n:"探索路线 · 古木幽谷",type:"explore",d:"老树参天，容易遇见山民与奇物"},
+  {n:"伐木路线 · 密林深处",type:"wood",d:"消耗光亮，稳定获得木材，不产酸枣"},
+  {n:"伐木路线 · 石桥野径",type:"wood",d:"寻找干木柴，适合补充营地库存"}
 ];
 const PET_BY_ROUTE = {0:"pet_niao",1:"pet_songshu",2:"pet_lu"};
 const SPECIAL_BY_ROUTE = {0:"jinzao",1:"jinghua",2:"jinzao"};
 const PET_FOOD = {pet_niao:"zao",pet_songshu:"tang",pet_lu:"fengmi"};
+const SPECIAL_ITEMS = ["jinzao","jinghua"];
 
 const SAVE_KEY = "xiaoyeren-save-v1";
 let S = null;   // 游戏状态
@@ -355,10 +366,11 @@ function freshState(){
   return {
     day:1, sun:100, money:0, started:false, ended:false,
     inv:{zao:0,tang:0,fengmi:0,guojiao:0,muchai:0,zaogao:0,wufugao:0,zaodong:0,zisuanzaoli:0,chenpizaoli:0,yezaogao:0,baixiangguogao:0,mangguogao:0,lanmeigao:0},
-    tools:{zhulan:false,shimo:false,zhaopai:false,lengcangxiang:false,guolimoju:false,tiaoweishao:false},
-    pets:[], activePet:null, specials:[], wufu:[],
-    routesTaken:0, outingChoices:0,
-    madeTotal:0, soldTotal:0, birdCount:0,
+    pets:[], activePet:null, specials:[], wufu:[], wufuPityDays:0, rareMisses:0, negativeStreak:0, vcBoost:0,
+    routesTaken:0, outingChoices:0, harvestBoost:1, harvestBase:3,
+    stats:{outings:0,wufu:0,shimen:0,gift:0,thorn:0,rain:0,wood:0,box:0},
+    tools:{zhulan:false,shimo:false,zhaopai:false,lengcangxiang:false,guolimoju:false,tiaoweishao:false,huju:false},
+    madeTotal:0, soldTotal:0,
   };
 }
 function saveGame(){
@@ -371,8 +383,15 @@ function resumeGame(){
     const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");
     if(!saved||!saved.started){toast("没有找到可继续的进度");return;}
     S=saved;
+    if(!S.harvestBoost)S.harvestBoost=1;
+    if(typeof S.wufuPityDays!=="number")S.wufuPityDays=0;
+    if(typeof S.rareMisses!=="number")S.rareMisses=S.wufuPityDays||0;
+    if(typeof S.negativeStreak!=="number")S.negativeStreak=0;
+    if(typeof S.vcBoost!=="number")S.vcBoost=0;
+    if(typeof S.harvestBase!=="number")S.harvestBase=3;
+    if(!S.stats)S.stats={outings:0,wufu:0,shimen:0,gift:0,thorn:0,rain:0,wood:0};
     ["zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].forEach(k=>{if(!(k in S.inv))S.inv[k]=0;});
-    ["lengcangxiang","guolimoju","tiaoweishao"].forEach(k=>{if(!(k in S.tools))S.tools[k]=false;});
+    ["lengcangxiang","guolimoju","tiaoweishao","huju"].forEach(k=>{if(!(k in S.tools))S.tools[k]=false;});
     if(!("activePet" in S))S.activePet=S.pets[0]||null;
     show("s-village");
     renderVillage();
@@ -385,7 +404,7 @@ function resumeGame(){
 function inv(){return S.inv}
 function hasTool(k){return S.tools[k]}
 function hasPet(k){return S.activePet===k}
-function pickBerryBase(){return 3 + (hasTool("zhulan")?2:0)}
+function pickBerryBase(){return S.harvestBase + (hasTool("zhulan")?2:0)}
 function addItem(k,n){S.inv[k]=(S.inv[k]||0)+n}
 
 /* ========== 通用工具 ========== */
@@ -402,6 +421,12 @@ function renderTop(){
   $("tSunTxt").textContent=Math.round(S.sun);
   $("tMoney").textContent=S.money;
   $("tZao").textContent=S.inv.zao;
+  const buff=$("buffStatus");
+  const chips=[];
+  if(S.harvestBoost>1)chips.push("🐾 引路【1次】");
+  if(S.vcBoost>0)chips.push("🧪 VC活力【"+S.vcBoost+"次】");
+  if(chips.length){buff.style.display="flex";buff.innerHTML=chips.join(" ");}
+  else{buff.style.display="none";buff.innerHTML="";}
 }
 function sunText(){
   if(S.sun>75)return"清晨";
@@ -488,7 +513,6 @@ function renderVillage(){
   $("vSub").textContent=(S.ended?"你已完成五福枣糕之旅。":"这是南酸枣成熟的第"+S.day+"天，太阳正"+sunText()+"，去山里走走吧。");
   // 五福进度
   $("vWufu").innerHTML=WUFU.map(w=>`<div class="dot" style="background:${S.wufu.includes(w.n)?"":"#d8d0c0"}${S.wufu.includes(w.n)?w.c:""}"></div>`).join("");
-  $("sun-btn").style.display=(S.started&&!S.ended)?"inline-block":"none";
 }
 
 /* ========== 一天结束 / 睡觉 ========== */
@@ -498,7 +522,7 @@ function goBed(){
     {who:"小野人",text:"太阳落山了，该回屋歇息了。"},
     {who:"小野人",text:"明天再进山，把五福果找齐！"}
   ],null,()=>{
-    S.day++;S.sun=100;
+    S.day++;S.sun=100;S.wufuPityDays++;S.rareMisses++;
     show("s-village");renderVillage();
     toast("新的一天开始了");
     checkWin();
@@ -533,15 +557,16 @@ function goPick(){
   showNextRoute();
 }
 function showNextRoute(){
-  // 随机挑2-4条路线
   const tmpl=ROUTE_TMP.slice().sort(()=>Math.random()-0.5);
-  const count=2+Math.floor(Math.random()*3); // 2~4
+  const count=3+Math.floor(Math.random()*2);
   chosenRoute=null;
-  routePool=S.sun<=0?[]:tmpl.slice(0,count).map((r,i)=>({...r,idx:i}));
+  const required=["pick","explore","wood"].map(type=>tmpl.find(r=>r.type===type));
+  const extras=tmpl.filter(r=>!required.includes(r));
+  routePool=S.sun<=0?[]:required.concat(extras).slice(0,count).map((r,i)=>({...r,idx:i}));
   const homeOption=`<div class="route-card" onclick="goHome()"><span class="rp">${S.sun<=0?"光已耗尽":"随时返回"}</span><div class="rn">回家休息</div><div class="rd">${S.sun<=0?"今天先回村，路上没有额外收获":"今天先回村，明天再继续探山"}</div></div>`;
   $("routeList").innerHTML=routePool.map(r=>`
     <div class="route-card" onclick="chooseRoute(${r.idx})">
-      <span class="rp">可能遇到惊喜</span>
+      <span class="rp">${r.type==="wood"?"稳定木材":"事件探索"}</span>
       <div class="rn">${esc(r.n)}</div>
       <div class="rd">${esc(r.d)}</div>
     </div>`).join("")+homeOption;
@@ -549,10 +574,7 @@ function showNextRoute(){
 }
 function goHomeFromVillage(){
   if(S.ended)return;
-  showDialog([
-    {who:"小野人",text:"今天的山路走累了，先回家休息一会儿。"},
-    {who:"小野人",text:"明天再背着竹篮，去寻找更甜的南酸枣。"}
-  ],null,()=>backVillage(true,"已回到村庄，先休息再说。"));
+  goBed();
 }
 function goHome(){
   showDialog([
@@ -569,53 +591,78 @@ function showWalkScene(routeName,next){
   },1350);
 }
 function chooseRoute(idx){
-  if(S.outingChoices>=5)return;
   const r=routePool.find(x=>x.idx===idx);
+  const minCost=Math.max(0,(r&&r.type==="wood"?8:12)*(S.vcBoost>0?.5:1)-(hasPet("pet_lu")?6:0));
+  if(S.sun<minCost){toast("天色太暗，强行进山会一无所获，先回家休息或做点别的吧");return;}
   S.outingChoices++;
   S.routesTaken++;
-  S.sun=Math.max(0,S.sun-(12+Math.random()*5)); // 进山消耗时间
+  S.stats.outings++;
+  const baseCost=(r&&r.type==="wood"?8+Math.random()*5:12+Math.random()*5);
+  S.sun=Math.max(0,S.sun-(S.vcBoost>0?baseCost*.5:baseCost));
+  if(S.vcBoost>0)S.vcBoost--;
   if(hasPet("pet_lu"))S.sun+=6;
-  (()=>{
-    if(S.sun<=0){goHome();return;}
-    showWalkScene(r?r.n:"深山小路",()=>resolveRouteEvent(idx, ()=>{
-      // 事件后进入采枣结果
-      finishPick();
-    }));
-  })();
+  showWalkScene(r?r.n:"深山小路",()=>resolveRouteEvent(r, (amount)=>{
+    if(r&&r.type==="wood"){
+      renderTop();
+      if(S.sun>0)showNextRoute();else goHome();
+    }else finishPick(amount);
+  }));
 }
-// 概率：华容道特殊事件20% 柴火事件20% 材料40% 宠物9% 特殊物品1%
-function resolveRouteEvent(routeIdx,cb){
-  const r=Math.random()*100;
-  if(r<20){ // 特殊事件：华容道
-    miniOpen(()=>{
-      showDialog([
-        {who:"小野人",text:"前方的石锁挡住了山路！把数字石块排好，才能继续前进。"},
-        {who:"小野人",text:"石锁打开了！继续进山找枣吧。"}
-      ],null,cb);
-    });
-  }else if(r<40){
-    woodGatherEvent(cb);
-  }else if(r<80){ // 木柴只通过商店或柴火事件获得
-    const mats=["zao","tang","fengmi","guojiao"];
-    const gain=mats[Math.floor(Math.random()*mats.length)];
-    const qty=gain==="zao"?pickBerryBase():(1+Math.floor(Math.random()*2));
-    addItem(gain,qty);
-    showDialog([
-      {who:"小野人",text:"嘿！路边发现了好东西——"+ITEMS[gain].name+" × "+qty+"。"},
-      {who:"小野人",text:""+ITEMS[gain].desc+"，收进竹篓！"}
-    ],null,cb);
-  }else if(r<89){ // 宠物 9%
-    const pk=PET_BY_ROUTE[routeIdx%3];
-    if(S.pets.includes(pk)){ // 已拥有则换材料
-      addItem("zao",2);showDialog([{who:"小野人",text:"遇见了一只老熟人，它送你两颗南酸枣。"}],null,cb);
-    }else{
-      tamePet(pk,cb);
-    }
-  }else{ // 特殊物品 1%
-    const sp=SPECIAL_BY_ROUTE[routeIdx%3];
-    if(S.specials.includes(sp)){addItem("zao",3);showDialog([{who:"小野人",text:"这里的气味不寻常……是稀有野果的气息！"},{who:"小野人",text:"虽然宝贝早已被采走，你还是捡到了3颗肥美的南酸枣。"}],null,cb);}
-    else{S.specials.push(sp);showDialog([{who:"小野人",text:"天啊！你在这里发现了——"+ITEMS[sp].name+"！"},{who:"小野人",text:"这是千年难遇的稀罕物，"+ITEMS[sp].desc+"。"}],null,cb);}
+function weightedEvent(routeType){
+  const negativeFactor=(S.negativeStreak>=2?.45:1)*(S.sun<=20?.75:1);
+  const rareBoost=Math.min(6,S.rareMisses*.45);
+  const weights=routeType==="explore"?{ordinary:14,grove:14,pet:5,spring:8,guide:8,tool:8,slip:10,rain:7,thorn:7,wufu:3,gift:2,lock:1,box:1}:{ordinary:26,grove:23,pet:6,spring:8,guide:7,tool:5,slip:10,rain:8,thorn:5,wufu:1,gift:1,lock:.5,box:.5};
+  weights.rain*=negativeFactor;weights.thorn*=negativeFactor;weights.slip*=negativeFactor;
+  weights.wufu+=rareBoost*.6;weights.lock+=rareBoost*.2;weights.box+=rareBoost*.2;
+  let roll=Math.random()*Object.values(weights).reduce((a,b)=>a+b,0);
+  for(const [key,weight] of Object.entries(weights)){roll-=weight;if(roll<=0)return key;}
+  return "ordinary";
+}
+function recordEvent(key){
+  if(key==="rain"||key==="thorn"||key==="slip"){S.negativeStreak++;return;}
+  S.negativeStreak=0;
+  if(key==="wufu"||key==="lock"||key==="box")S.rareMisses=0;else S.rareMisses++;
+}
+function resolveRouteEvent(route,cb){
+  if(route&&route.type==="wood"){
+    const cost=14+Math.floor(Math.random()*7),qty=3+Math.floor(Math.random()*4);
+    S.sun=Math.max(0,S.sun-cost);addItem("muchai",qty);S.stats.wood+=qty;recordEvent("wood");renderTop();
+    showDialog([{who:"小野人",text:"密林里传来咚咚的伐木声。消耗光亮 -"+cost+"，获得干木柴 ×"+qty+"，这条路线不产酸枣。"}],null,()=>cb(0));return;
   }
+  const missingWufu=WUFU.filter(w=>!S.wufu.includes(w.n));
+  if(S.rareMisses>=9&&missingWufu.length){
+    const w=missingWufu[Math.floor(Math.random()*missingWufu.length)];S.wufu.push(w.n);S.rareMisses=0;S.stats.wufu++;
+    showDialog([{who:"小野人",text:"林间的微光终于为你指路。发现五福果——"+w.n+"！"}],null,()=>cb(0));return;
+  }
+  const event=weightedEvent(route&&route.type||"pick");recordEvent(event);
+  if(event==="ordinary")ordinaryHarvestEvent(cb);
+  else if(event==="grove"){const qty=7+Math.floor(Math.random()*4);showDialog([{who:"小野人",text:"拨开藤蔓，前面藏着一大片酸枣丛！获得南酸枣 ×"+qty+"。"}],null,()=>cb(qty));}
+  else if(event==="spring"){S.sun=Math.min(100,S.sun+15);addItem("zao",2);showDialog([{who:"小野人",text:"林间清泉清凉甘甜，光亮 +15，顺手捡到南酸枣 ×2。"}],null,()=>cb(0));}
+  else if(event==="guide"){S.harvestBoost=1.3;renderTop();showDialog([{who:"小野人",text:"小动物在前面带路！下一次采摘数量增加30%。"}],null,()=>cb(0));}
+  else if(event==="tool"){const money=10+Math.floor(Math.random()*11);S.money+=money;showDialog([{who:"小野人",text:"树根下发现旧工具，修补后换得铜板 ×"+money+"。"}],null,()=>cb(0));}
+  else if(event==="pet"){encounterPet(cb);}
+  else if(event==="slip"){const lost=Math.min(S.inv.zao>1?2+Math.floor(Math.random()*3):0,Math.max(0,S.inv.zao-1));S.inv.zao-=lost;showDialog([{who:"小野人",text:lost?"山路太滑，摔掉了南酸枣 ×"+lost+"。":"山路打滑了，但没有损失酸枣。"}],null,()=>cb(0));}
+  else if(event==="rain"){const loss=hasTool("huju")?5:10;S.sun=Math.max(0,S.sun-loss);S.stats.rain++;const retained=Math.max(2,Math.ceil((pickBerryBase()+Math.floor(Math.random()*4))/2));showDialog([{who:"小野人",text:"突遇阵雨！光亮 -"+loss+"，本次采摘数量减半，保底获得南酸枣 ×"+retained+"。"}],null,()=>cb(retained));}
+  else if(event==="thorn"){const loss=hasTool("huju")?10:15;S.sun=Math.max(0,S.sun-loss);S.stats.thorn++;showDialog([{who:"小野人",text:"荆棘划伤了手臂，光亮 -"+loss+"。简易护具替你挡下了一部分伤害。"}],null,()=>cb(0));}
+  else if(event==="wufu"){if(missingWufu.length){const w=missingWufu[Math.floor(Math.random()*missingWufu.length)];S.wufu.push(w.n);S.rareMisses=0;S.stats.wufu++;showDialog([{who:"小野人",text:"枝头闪过一道彩光！发现五福果——"+w.n+"！"}],null,()=>cb(0));}else{addItem("zao",5);showDialog([{who:"小野人",text:"五福果已经集齐了，树下还留着南酸枣 ×5。"}],null,()=>cb(0));}}
+  else if(event==="gift"){addItem("zao",8);S.money+=15;addItem("muchai",1);S.stats.gift++;showDialog([{who:"小野人",text:"热心山民送来南酸枣 ×8、铜板 ×15，还附赠干木柴 ×1。"}],null,()=>cb(0));}
+  else if(event==="box"){openBoxEvent(cb);}
+  else{miniOpen(()=>{showDialog([{who:"小野人",text:"前方的石锁挡住了山路！"},{who:"小野人",text:"石锁打开了！获得铜板 ×50、干木柴 ×2，并得到一次采摘增益。"}],null,()=>{S.money+=50;addItem("muchai",2);S.harvestBoost=1.3;S.stats.shimen++;renderTop();cb(0);});});}
+}
+function ordinaryHarvestEvent(cb){
+  showDialog([
+    {who:"小野人",text:"这段山路走得很顺，前方的酸枣树枝头挂满了果实。"},
+    {who:"小野人",text:"旁边还有一些干柴，要不要停下来捡一点？"}
+  ],[
+    {text:"继续采摘（不消耗额外光亮，获得酸枣 ×3~6）",cb:()=>{closeDialog();cb(3+Math.floor(Math.random()*4));}},
+    {text:"停下捡柴（消耗光亮 12~16，获得木柴 ×1~3，酸枣 ×3~6）",cb:()=>{
+      const cost=12+Math.floor(Math.random()*5);
+      S.sun=Math.max(0,S.sun-cost);
+      const qty=1+Math.floor(Math.random()*3);addItem("muchai",qty);S.stats.wood+=qty;
+      renderTop();
+      showDialog([{who:"小野人",text:"柴火捡好了！获得干木柴 ×"+qty+"，消耗光亮 "+cost+"点。"}],null,()=>cb(3+Math.floor(Math.random()*4)));
+    }}
+  ]);
 }
 function woodGatherEvent(cb){
   showDialog([
@@ -632,17 +679,49 @@ function woodGatherEvent(cb){
     }}
   ]);
 }
-function tamePet(pk,cb){
+/* 遇见宠物：三种山间伙伴各有专属剧情；全部驯服后转为老友相聚 */
+function encounterPet(cb){
+  const petKeys=["pet_niao","pet_songshu","pet_lu"];
+  const available=petKeys.filter(pk=>!S.pets.includes(pk));
+  if(!available.length){
+    const extra=3+Math.floor(Math.random()*3);
+    addItem("zao",extra);
+    S.sun=Math.min(100,S.sun+10);
+    showDialog([
+      {who:"小野人",text:"山雀扑棱着翅膀落在你肩头，松鼠抱着尾巴蹿上树干，小鹿也踏着轻步迎了上来——三只伙伴像是专程来接你。"},
+      {who:"小野人",text:"伙伴们帮忙多衔回南酸枣 ×"+extra+"，还为你照亮了前路（光亮 +10）。"}
+    ],null,()=>cb(0));
+    return;
+  }
+  const pk=available[Math.floor(Math.random()*available.length)];
   const food=PET_FOOD[pk];
-  const pn=ITEMS[pk].name;
   const foodName=ITEMS[food].name;
-  showDialog([
-    {who:"小野人",text:"一只"+pn+"从树丛里探出头来，似乎在等你拿出喜欢的食物。"},
-    {who:"小野人",text:"它最喜欢吃"+foodName+"。"}
-  ],[
-    {text:"拿出"+foodName+"（"+S.inv[food]+"）",cb:()=>feedPet(pk,food,cb)},
+  const have=S.inv[food]||0;
+  const intro=petIntro(pk);
+  if(have<=0){
+    showDialog(intro.concat([
+      {who:"小野人",text:"可惜身上没带"+foodName+"……它歪了歪头，转身钻回林间。下次备好"+foodName+"再来看它吧。"}
+    ]),null,()=>cb());
+    return;
+  }
+  showDialog(intro,[
+    {text:"拿出"+foodName+" ×1（当前"+have+"）",cb:()=>feedPet(pk,food,cb)},
     {text:"先不驯服",cb:()=>{closeDialog();cb();}}
   ]);
+}
+function petIntro(pk){
+  if(pk==="pet_niao")return [
+    {who:"小野人",text:"枝头扑棱一声轻响，一只灰蓝羽毛的山雀落了下来，歪着脑袋，圆溜溜的眼睛盯着竹篮里的南酸枣。"},
+    {who:"小野人",text:"它最喜欢吃南酸枣。拿出一颗来，也许它愿意一路陪你去采枣。"}
+  ];
+  if(pk==="pet_songshu")return [
+    {who:"小野人",text:"树梢传来沙沙细响，一只毛茸茸的松鼠抱着蓬松的大尾巴，好奇地嗅着你口袋里的甘蔗糖。"},
+    {who:"小野人",text:"它最喜欢吃甘蔗糖。分它一块，或许它乐意帮你收拾做糕的柴火。"}
+  ];
+  return [
+    {who:"小野人",text:"林间小径上，一只温顺的小鹿轻轻走近，鼻尖碰了碰你装野蜂蜜的竹筒。"},
+    {who:"小野人",text:"它最喜欢吃野蜂蜜。喂它一口，它说不定愿意带你走更快的山路。"}
+  ];
 }
 function feedPet(pk,food,cb){
   if(S.inv[food]<=0){toast("没有足够的"+ITEMS[food].name);return;}
@@ -654,38 +733,42 @@ function feedPet(pk,food,cb){
   cb();
 }
 
-/* ========== 采枣 + 飞鸟事件 ========== */
-function finishPick(){
-  renderTop();
-  // 光亮耗尽时直接回家，不再生成额外收获
-  if(S.sun<=0){
-    goHome();
+/* ========== 神秘宝匣：金色酸枣 / 野果VC精华 ========== */
+function openBoxEvent(cb){
+  const missing=SPECIAL_ITEMS.filter(k=>!S.specials.includes(k));
+  if(!missing.length){
+    S.money+=60;
+    showDialog([{who:"小野人",text:"一只古朴木匣静静躺在藤蔓下，可惜里面只有几片干枯的树叶……翻找间，夹层里竟藏着 60 枚铜板！"}],null,()=>cb(0));
     return;
   }
-  const n=pickBerryBase()+Math.floor(Math.random()*2);
-  addItem("zao",n);
-  renderTop();
-  if(S.outingChoices<5){
-    showNextRoute();
+  const k=missing[Math.floor(Math.random()*missing.length)];
+  S.specials.push(k);S.stats.box++;
+  if(k==="jinzao"){
+    showDialog([{who:"小野人",text:"拨开层层藤蔓，树根下露出一只古朴木匣。匣中静静躺着一颗泛着金光的野果——是金色酸枣！百年一遇，拿到山间小店能卖个好价钱。"}],null,()=>cb(0));
   }else{
-    showDialog([
-      {who:"小野人",text:"前面的路已经走到终点了，今天的探索先到这里。"},
-      {who:"小野人",text:"早点回到村庄吧，带着收获回去做枣糕！"}
-    ],null,()=>backVillage(true,"今天进山的5条路都走过了。"));
+    showDialog([{who:"小野人",text:"拨开层层藤蔓，树根下露出一只古朴木匣。匣中盛着一小瓶琥珀色的野果精华——VC精华！到背包里服下它，接下来的山路会轻松许多。"}],null,()=>cb(0));
   }
+}
+function drinkVc(){
+  const i=S.specials.indexOf("jinghua");if(i<0)return;
+  S.specials.splice(i,1);
+  S.vcBoost=Math.min(9,(S.vcBoost||0)+3);
+  toast("服下野果VC精华，接下来 3 次进山阳光消耗减半！");
+  renderTop();renderBag();
+}
+
+/* ========== 采枣 + 飞鸟事件 ========== */
+function finishPick(eventAmount){
+  renderTop();
+  // 事件已触发，收获立即兑现；光亮耗尽只影响能否继续下一条路线
+  let n=typeof eventAmount==="number"?eventAmount:pickBerryBase()+Math.floor(Math.random()*2);
+  if(S.harvestBoost>1&&n>0){n=Math.max(1,Math.round(n*S.harvestBoost));S.harvestBoost=1;}
+  if(n>0)addItem("zao",n);
+  renderTop();
+  if(S.sun>0)showNextRoute();else goHome();
 }
 function berrySVG(){
   return `<svg viewBox="0 0 200 130" width="230"><rect width="200" height="130" fill="#3E7C4F" rx="14"/><circle cx="70" cy="60" r="26" fill="#B3412F"/><circle cx="120" cy="55" r="22" fill="#E0784F"/><circle cx="95" cy="80" r="18" fill="#8FBF6B"/></svg>`;
-}
-function birdSVG(){
-  return `<svg viewBox="0 0 220 150" width="250"><rect width="220" height="150" fill="#B3412F" rx="14"/><path d="M110 40 q-6 -14 4 -13 q4 10 -4 13z" fill="#F2C992"/><ellipse cx="110" cy="62" rx="30" ry="20" fill="#2E6B43"/><circle cx="124" cy="56" r="2.6" fill="#fff"/><circle cx="96" cy="74" r="8" fill="#B3412F"/><path d="M20 20 h-8 v8M208 20 h8 v8M20 130 h-8 v-8M208 130 h8 v-8" stroke="#fff" stroke-width="3"/></svg>`;
-}
-function birdSteal(){
-  S.birdCount++;
-  const lost=pickBerryBase();
-  showCG(birdSVG(),"酸枣被飞鸟抢走了","天色晚了，几只飞鸟趁你不注意，把刚采的枣儿叼走了一半……",()=>{
-    backVillage(true,"今天收获不多，早点歇息吧。");
-  });
 }
 
 /* ========== 返回村庄 ========== */
@@ -733,18 +816,17 @@ function renderWork(){
   }).join("");
 }
 function makeWork(k){
-  // 触发华容道解密（制作过程）
   const woodNeed=hasPet("pet_songshu")?1:2;
-  const recipes={zaogao:{name:"原味枣糕",need:{zao:3,wood:woodNeed}},wufugao:{name:"五福枣糕",need:{zao:8,wood:woodNeed,wufu:5}},zaodong:{name:"南酸枣冻",need:{zao:3,fengmi:1},tool:"lengcangxiang"},zisuanzaoli:{name:"紫苏南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},chenpizaoli:{name:"陈皮南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},yezaogao:{name:"椰果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},baixiangguogao:{name:"百香果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},mangguogao:{name:"芒果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},lanmeigao:{name:"蓝莓南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"}}[k];
-  if(!recipes[k]||recipes[k].tool&&!hasTool(recipes[k].tool)){toast("还缺少制作工具");return;}
-  pendingAction=k;
-  miniOpen(()=>{
-    const recipe=recipes[k],need=recipe.need;
-    if(S.inv.zao<(need.zao||0)||S.inv.muchai<(need.wood||0)||S.inv.fengmi<(need.fengmi||0)||S.inv.tang<(need.tang||0)||(need.wufu&&S.wufu.length<need.wufu)){toast("材料不足");return;}
-    Object.entries(need).forEach(([key,value])=>{if(key==="wood")S.inv.muchai-=value;else if(key!=="wufu")S.inv[key]-=value;});
-    addItem(k,1);S.madeTotal++;toast(recipe.name+"做好了");
-    renderWork();renderTop();
-  });
+  const recipes={zaodong:{name:"南酸枣冻",need:{zao:3,fengmi:1},tool:"lengcangxiang"},zisuanzaoli:{name:"紫苏南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},chenpizaoli:{name:"陈皮南酸枣粒",need:{zao:2,tang:1},tool:"guolimoju"},yezaogao:{name:"椰果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},baixiangguogao:{name:"百香果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},mangguogao:{name:"芒果南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"},lanmeigao:{name:"蓝莓南酸枣糕",need:{zao:3,wood:1},tool:"tiaoweishao"}};
+  const baseRecipe=k==="zaogao"?{name:"原味枣糕",need:{zao:3,wood:woodNeed}}:k==="wufugao"?{name:"五福枣糕",need:{zao:8,wood:woodNeed,wufu:5}}:null;
+  const recipe=baseRecipe||recipes[k];
+  if(!recipe){toast("没有找到这份配方");return;}
+  if(!baseRecipe&&recipe.tool&&!hasTool(recipe.tool)){toast("还缺少制作工具");return;}
+  const need=recipe.need;
+  if(S.inv.zao<(need.zao||0)||S.inv.muchai<(need.wood||0)||S.inv.fengmi<(need.fengmi||0)||S.inv.tang<(need.tang||0)||(need.wufu&&S.wufu.length<need.wufu)){toast("材料不足");return;}
+  Object.entries(need).forEach(([key,value])=>{if(key==="wood")S.inv.muchai-=value;else if(key!=="wufu")S.inv[key]-=value;});
+  addItem(k,1);S.madeTotal++;toast(recipe.name+"做好了");
+  renderWork();renderTop();
 }
 
 /* ---- 华容道 3x3 滑块拼图 ---- */
@@ -812,6 +894,7 @@ function renderShop(){
     if(S.inv[k]>0)sellHTML+=`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>卖 ${ITEMS[k].value} 铜板/份</span></div><div class="in">×${S.inv[k]}</div><button class="btn berry sm" onclick="sell('${k}',${ITEMS[k].value})">卖</button></div>`;
   });
   if(S.specials.includes("jinghua"))sellHTML+=`<div class="item"><div class="ii">晶</div><div class="it"><b>野果VC精华</b><span>卖 ${ITEMS.jinghua.value} 铜板</span></div><div class="in">×1</div><button class="btn berry sm" onclick="sellSpecial('jinghua')">卖</button></div>`;
+  if(S.specials.includes("jinzao"))sellHTML+=`<div class="item"><div class="ii">金</div><div class="it"><b>金色酸枣</b><span>百年一遇，卖 ${ITEMS.jinzao.value} 铜板</span></div><div class="in">×1</div><button class="btn berry sm" onclick="sellSpecial('jinzao')">卖</button></div>`;
   // 买入项：材料+工具
   const buys=[
     {k:"tang",name:"甘蔗糖",price:2,need:false,desc:"做糕配料"},
@@ -878,7 +961,7 @@ function renderBag(){
   let html="";
   const ownMats=["zao","tang","fengmi","guojiao","muchai"].filter(k=>S.inv[k]>0);
   const ownProd=["zaogao","wufugao","zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].filter(k=>S.inv[k]>0);
-  const ownTools=["zhulan","shimo","zhaopai","lengcangxiang","guolimoju","tiaoweishao"].filter(k=>hasTool(k));
+  const ownTools=["zhulan","shimo","zhaopai","lengcangxiang","guolimoju","tiaoweishao","huju"].filter(k=>hasTool(k));
   const pets=S.pets.map(k=>k);
   const specials=S.specials;
   html+=`<div class="section-title">材料与成品</div>`;
@@ -887,9 +970,29 @@ function renderBag(){
   html+= (matsHTML+prodHTML)||`<div class="empty">背包还空着</div>`;
   html+=`<div class="section-title" style="margin-top:14px">工具</div>`+(ownTools.map(k=>`<div class="item"><div class="ii">${itemIcon(k)}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">已装备</div></div>`).join("")||`<div class="empty">还没有工具，去商店看看</div>`);
   html+=`<div class="section-title" style="margin-top:14px">宠物伙伴</div>`+(pets.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">${S.activePet===k?"携带中":"已收集"}</div><button class="btn ${S.activePet===k?"gray":"amber"} sm" ${S.activePet===k?"disabled":""} onclick="selectPet('${k}')">${S.activePet===k?"当前携带":"携带"}</button></div>`).join("")||`<div class="empty">还没有宠物伙伴</div>`);
-  html+=`<div class="section-title" style="margin-top:14px">特殊物品</div>`+(specials.map(k=>`<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">稀有</div></div>`).join("")||`<div class="empty">尚未发现稀有之物</div>`);
+  html+=`<div class="section-title" style="margin-top:14px">特殊物品</div>`+(specials.map(k=>{
+    const action=k==="jinzao"?`<button class="btn amber sm" onclick="goShop()">去小店出售</button>`:(k==="jinghua"?`<button class="btn amber sm" onclick="drinkVc()">服用</button>`:"");
+    return `<div class="item"><div class="ii">${ITEMS[k].icon}</div><div class="it"><b>${ITEMS[k].name}</b><span>${ITEMS[k].desc}</span></div><div class="in">稀有</div>${action}</div>`;
+  }).join("")||`<div class="empty">尚未发现稀有之物</div>`)+(S.vcBoost>0?`<div class="card"><h3>🧪 VC 活力</h3><div class="stage">接下来 ${S.vcBoost} 次进山的阳光消耗减半。</div></div>`:"");
   html+=`<div class="section-title" style="margin-top:14px">五福收集</div><div class="card"><div class="row">${WUFU.map(w=>`<div style="text-align:center"><div class="dot" style="margin:0 auto 6px;background:${S.wufu.includes(w.n)?w.c:"#d8d0c0"};width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:${S.wufu.includes(w.n)?"#fff":"#9a917e"};font-weight:700">${w.n}</div><small class="muted">${w.n}</small></div>`).join("")}</div><div style="text-align:center;margin-top:8px;font-weight:700;color:var(--green)">${S.wufu.length}/5</div></div>`;
   $("bagList").innerHTML=html;
+}
+
+function goBuild(){renderBuild();show("s-build");}
+function renderBuild(){
+  const fire=S.inv.muchai>=2, basket=S.inv.muchai>=5&&S.money>=10&&S.harvestBase<=3, armor=S.inv.muchai>=3&&!hasTool("huju");
+  $("buildList").innerHTML=`
+    <div class="card"><h3>🔥 篝火</h3><div class="stage">消耗木柴 ×2，恢复光亮 +25。</div><button class="btn ${fire?"amber":"gray"} sm" ${fire?"":"disabled"} onclick="buildCampfire()">生火</button></div>
+    <div class="card"><h3>🧺 竹篮升级</h3><div class="stage">消耗木柴 ×5、铜板 ×10，永久提升采摘基础收益 +1。</div><button class="btn ${basket?"amber":"gray"} sm" ${basket?"":"disabled"} onclick="upgradeBasket()">${S.harvestBase>3?"已升级":"升级"}</button></div>
+    <div class="card"><h3>🛡️ 简易护具</h3><div class="stage">消耗木柴 ×3，负面事件光亮损失减少5点。</div><button class="btn ${armor?"amber":"gray"} sm" ${armor?"":"disabled"} onclick="makeArmor()">${hasTool("huju")?"已制作":"制作"}</button></div>`;
+}
+function buildCampfire(){if(S.inv.muchai<2)return;S.inv.muchai-=2;S.sun=Math.min(100,S.sun+25);toast("篝火燃起，光亮 +25");renderBuild();renderTop();}
+function upgradeBasket(){if(S.inv.muchai<5||S.money<10||S.harvestBase>3)return;S.inv.muchai-=5;S.money-=10;S.harvestBase=4;toast("竹篮升级完成，基础采摘 +1");renderBuild();renderTop();}
+function makeArmor(){if(S.inv.muchai<3||hasTool("huju"))return;S.inv.muchai-=3;S.tools["huju"]=true;toast("简易护具制作完成");renderBuild();renderTop();}
+function goStats(){renderStats();show("s-stats");}
+function renderStats(){
+  const st=S.stats||{};
+  $("statsList").innerHTML=`<div class="card"><h3>旅途记录</h3><div class="res-line"><span class="chip">进山 ${st.outings||0} 次</span><span class="chip">伐木 ${st.wood||0} 根</span><span class="chip">做糕 ${S.madeTotal} 次</span><span class="chip">售卖 ${S.soldTotal} 次</span></div></div><div class="card"><h3>事件图鉴</h3><div class="res-line"><span class="chip">五福果 ${st.wufu||0} 次</span><span class="chip">神秘宝匣 ${st.box||0} 次</span><span class="chip">石门石锁 ${st.shimen||0} 次</span><span class="chip">山民馈赠 ${st.gift||0} 次</span><span class="chip">阵雨 ${st.rain||0} 次</span><span class="chip">荆棘 ${st.thorn||0} 次</span></div></div><div class="card"><h3>当前保底</h3><div class="stage">连续未遇稀有事件：${S.rareMisses||0} 次。达到 9 次后，下次探索必定发现五福果。</div></div>`;
 }
 
 /* ========== 启动 ========== */
