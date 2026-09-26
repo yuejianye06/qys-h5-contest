@@ -37,6 +37,7 @@ body{
   padding:3px 7px;border-radius:999px;white-space:nowrap;
 }
 #topbar .t b{font-weight:700}
+#topbar .back-btn{display:none;border:0;border-radius:999px;padding:3px 7px;background:rgba(255,255,255,.14);color:#fff;font-family:inherit;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer}
 .t-day{font-size:13px;font-weight:700;margin-right:2px}
 .t-bar{width:52px;height:8px;background:rgba(0,0,0,.3);border-radius:6px;overflow:hidden;position:relative}
 .t-bar i{display:block;height:100%;background:linear-gradient(90deg,#F2C992,#F0A35C);border-radius:6px;transition:width .4s}
@@ -195,6 +196,8 @@ small.muted{color:#a89e88}
     <div class="t"><span class="t-ico">光</span><div class="t-bar"><i id="tSun"></i></div><span id="tSunTxt">100</span></div>
     <div class="t"><span class="t-ico">钱</span><b id="tMoney">0</b><span>铜</span></div>
     <div class="t"><span class="t-ico">枣</span><b id="tZao">0</b></div>
+    <button class="back-btn" id="topBack" onclick="backVillage()">返回村庄</button>
+    <button class="back-btn" id="topHome" onclick="returnHome()" title="返回首页" aria-label="返回首页">首页</button>
     <div id="buffStatus" style="display:none"></div>
   </div>
 
@@ -244,7 +247,6 @@ small.muted{color:#a89e88}
     <div class="screen-scroll">
       <div class="section-title">小野人的工坊</div>
       <div id="workList"></div>
-      <div style="margin-top:10px"><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
     </div>
   </div>
 
@@ -254,7 +256,6 @@ small.muted{color:#a89e88}
       <div class="section-title">山间小店 · 交换物品</div>
       <div class="stage">小掌柜，把收来的野果换成铜板吧。铜板可以买工具和材料。</div>
       <div id="shopList"></div>
-      <div style="margin-top:10px"><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
     </div>
   </div>
 
@@ -263,16 +264,15 @@ small.muted{color:#a89e88}
     <div class="screen-scroll">
       <div class="section-title">背包图鉴</div>
       <div id="bagList"></div>
-      <div style="margin-top:10px"><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
     </div>
   </div>
 
   <div class="screen" id="s-build">
-    <div class="screen-scroll"><div class="section-title">营地建造</div><div class="stage">木柴可以转化为真正的生存能力。每项建造只需一次投入。</div><div id="buildList"></div><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
+    <div class="screen-scroll"><div class="section-title">营地建造</div><div class="stage">木柴可以转化为真正的生存能力。每项建造只需一次投入。</div><div id="buildList"></div></div>
   </div>
 
   <div class="screen" id="s-stats">
-    <div class="screen-scroll"><div class="section-title">冒险统计</div><div id="statsList"></div><button class="btn gray sm" onclick="backVillage()">返回村庄</button></div>
+    <div class="screen-scroll"><div class="section-title">冒险统计</div><div id="statsList"></div></div>
   </div>
 
   <!-- 对话框 -->
@@ -364,7 +364,7 @@ let pendingAction = null; // 解密/事件完成后回调
 
 function freshState(){
   return {
-    day:1, sun:100, money:0, started:false, ended:false,
+    day:1, sun:100, money:0, started:false, ended:false, wufuDone:false,
     inv:{zao:0,tang:0,fengmi:0,guojiao:0,muchai:0,zaogao:0,wufugao:0,zaodong:0,zisuanzaoli:0,chenpizaoli:0,yezaogao:0,baixiangguogao:0,mangguogao:0,lanmeigao:0},
     pets:[], activePet:null, specials:[], wufu:[], wufuPityDays:0, rareMisses:0, negativeStreak:0, vcBoost:0,
     routesTaken:0, outingChoices:0, harvestBoost:1, harvestBase:3,
@@ -388,6 +388,7 @@ function resumeGame(){
     if(typeof S.rareMisses!=="number")S.rareMisses=S.wufuPityDays||0;
     if(typeof S.negativeStreak!=="number")S.negativeStreak=0;
     if(typeof S.vcBoost!=="number")S.vcBoost=0;
+    if(typeof S.wufuDone!=="boolean")S.wufuDone=false;
     if(typeof S.harvestBase!=="number")S.harvestBase=3;
     if(!S.stats)S.stats={outings:0,wufu:0,shimen:0,gift:0,thorn:0,rain:0,wood:0};
     ["zaodong","zisuanzaoli","chenpizaoli","yezaogao","baixiangguogao","mangguogao","lanmeigao"].forEach(k=>{if(!(k in S.inv))S.inv[k]=0;});
@@ -410,7 +411,7 @@ function addItem(k,n){S.inv[k]=(S.inv[k]||0)+n}
 /* ========== 通用工具 ========== */
 const $=id=>document.getElementById(id);
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800);}
-function show(scr){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(scr).classList.add("active");}
+function show(scr){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(scr).classList.add("active");$("topBack").style.display=["s-work","s-shop","s-bag","s-build","s-stats"].includes(scr)?"block":"none";$("topHome").style.display=scr==="s-intro"?"none":"block";}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function itemIcon(k){return ITEMS[k]&&ITEMS[k].image?`<img src="${ITEMS[k].image}" alt="${esc(ITEMS[k].name)}">`:ITEMS[k]?ITEMS[k].icon:"?";}
 
@@ -510,7 +511,7 @@ function renderVillage(){
   renderTop();
   const h=S.day===1?"早安，小野人":(sunText()+"，小野人");
   $("vHello").textContent=h;
-  $("vSub").textContent=(S.ended?"你已完成五福枣糕之旅。":"这是南酸枣成熟的第"+S.day+"天，太阳正"+sunText()+"，去山里走走吧。");
+  $("vSub").textContent=S.ended?"你已完成五福枣糕之旅。":(S.wufuDone?"五福果已集齐！回工坊，把传世五福枣糕做出来吧。":"这是南酸枣成熟的第"+S.day+"天，太阳正"+sunText()+"，去山里走走吧。");
   // 五福进度
   $("vWufu").innerHTML=WUFU.map(w=>`<div class="dot" style="background:${S.wufu.includes(w.n)?"":"#d8d0c0"}${S.wufu.includes(w.n)?w.c:""}"></div>`).join("");
 }
@@ -522,25 +523,49 @@ function goBed(){
     {who:"小野人",text:"太阳落山了，该回屋歇息了。"},
     {who:"小野人",text:"明天再进山，把五福果找齐！"}
   ],null,()=>{
-    S.day++;S.sun=100;S.wufuPityDays++;S.rareMisses++;
+    S.day++;S.sun=100;S.wufuPityDays++;
     show("s-village");renderVillage();
     toast("新的一天开始了");
     checkWin();
   });
 }
 
-/* ========== 胜利判定 ========== */
+/* ========== 胜利判定（两段式）========== */
+/* 阶段一：集齐五福果 → 触发集齐剧情，可继续自由行动 */
 function checkWin(){
-  if(S.wufu.length>=5&&!S.ended){
-    S.ended=true;
-    setTimeout(()=>endingGood(),400);
+  if(S.wufu.length>=5&&!S.wufuDone){
+    S.wufuDone=true;
+    wufuCollectedScene();
   }
+  /* 阶段二：做出五福枣糕 → 先手动确认，再进入终局 CG */
+  if(S.wufuDone&&S.inv.wufugao>=1&&!S.ended){
+    wufuGaoConfirmScene();
+  }
+}
+function wufuGaoConfirmScene(){
+  if(S.ended)return;
+  showDialog([
+    {who:"小野人",text:"五福枣糕做好了！香甜的蒸汽从蒸笼里腾起，金黄糕体上泛着五福的光泽。"},
+    {who:"小野人",text:"守林人传下的心愿，就差最后一步了——把它端出深山，让更多人尝到这份酸甜韧滑。"}
+  ],[
+    {text:"端出深山，讲完这个故事",cb:()=>{closeDialog();S.ended=true;renderTop();setTimeout(()=>endingGood(),300);}}
+  ],null);
+}
+function wufuCollectedScene(){
+  showDialog([
+    {who:"小野人",text:"康、乐、安、丰、福——五颗五福果，终于集齐了！"},
+    {who:"小野人",text:"山里的传说应验了：把它们和深山南酸枣一起，就能做出传世的五福枣糕。"},
+    {who:"小野人",text:"还差最后一步——回工坊，把五福枣糕做出来！"}
+  ],null,()=>{
+    toast("五福果集齐！去工坊制作五福枣糕");
+    renderVillage();
+  });
 }
 function endingGood(){
   showDialog([
-    {who:"小野人",text:"康、乐、安、丰、福——五颗五福果，终于集齐了！"},
-    {who:"小野人",text:"把它们和深山南酸枣一起，做成了传世的五福枣糕。"},
-    {who:"小野人",text:"愿这深山里的酸甜韧滑，被更多年轻人尝到！"}
+    {who:"小野人",text:"五福果和深山南酸枣一起下锅，蒸足了时辰——传世五福枣糕，出炉！"},
+    {who:"小野人",text:"酸甜韧滑，果香扑鼻。这一块，值得被更多年轻人尝到。"},
+    {who:"小野人",text:"守林小野人的故事，从此传出了深山。"}
   ],null,()=>{
     const cgSVG=`<svg viewBox="0 0 200 130" width="240"><rect width="200" height="130" fill="#2E6B43" rx="14"/><circle cx="60" cy="55" r="34" fill="#F2C992"/><text x="60" y="65" text-anchor="middle" font-size="26" fill="#B3412F" font-weight="bold">五福</text><circle cx="140" cy="80" r="24" fill="#B3412F"/><text x="140" y="88" text-anchor="middle" font-size="16" fill="#fff">枣糕</text></svg>`;
     showCG(cgSVG,"传世五福枣糕，出炉！","你成功把小野人的南酸枣故事讲出了深山。感谢体验《小野人·南酸枣寻味记》。",()=>{});
@@ -779,6 +804,13 @@ function backVillage(quiet,msg){
   else if(msg)toast(msg);
   checkWin();
 }
+function returnHome(){
+  if(S&&S.started){
+    localStorage.setItem(SAVE_KEY,JSON.stringify(S));
+    $("resumeGame").style.display="block";
+  }
+  show("s-intro");
+}
 
 /* ========== 工坊 + 华容道 ========== */
 function goWork(){
@@ -825,7 +857,9 @@ function makeWork(k){
   const need=recipe.need;
   if(S.inv.zao<(need.zao||0)||S.inv.muchai<(need.wood||0)||S.inv.fengmi<(need.fengmi||0)||S.inv.tang<(need.tang||0)||(need.wufu&&S.wufu.length<need.wufu)){toast("材料不足");return;}
   Object.entries(need).forEach(([key,value])=>{if(key==="wood")S.inv.muchai-=value;else if(key!=="wufu")S.inv[key]-=value;});
-  addItem(k,1);S.madeTotal++;toast(recipe.name+"做好了");
+  addItem(k,1);S.madeTotal++;
+  if(k==="wufugao")checkWin();
+  else toast(recipe.name+"做好了");
   renderWork();renderTop();
 }
 
