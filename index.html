@@ -1037,6 +1037,10 @@ function renderStats(){
 }
 
 /* ========== 启动 ========== */
+// 预加载全部表情头像，避免对话框弹出时图片卡一下
+["happy","surprised","thinking","cheering","thanks","sleepy","shy","eating"].forEach(n=>{const i=new Image();i.src="assets/exp/"+n+".png";});
+// 预加载过场视频
+(function(){const v=document.createElement("video");v.preload="auto";v.muted=true;v.src="assets/walk.mp4";})();
 $("resumeGame").style.display=localStorage.getItem(SAVE_KEY)?"block":"none";
 show("s-intro");
 </script>
