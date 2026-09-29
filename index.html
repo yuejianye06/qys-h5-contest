@@ -164,8 +164,9 @@ body{
 .slide .cell.empty{background:transparent;cursor:default}
 .slide .cell.cake{background:var(--green) url('assets/zaogao.png') center/cover no-repeat;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
 .slide .cell.cake .num{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(46,107,67,.92);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-/* 对话框头像：小野人Q版 */
-#dialog .portrait .pava{width:100%;height:100%;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);background:#E0784F url('assets/avatar.png') center/cover no-repeat}
+/* 对话框头像：小野人表情贴纸 */
+#dialog .portrait .pava{width:100%;height:100%;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);background:#fff;overflow:hidden}
+#dialog .portrait .pava img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
 /* 地图 */
 .map-svg{width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
 .map-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -176,16 +177,12 @@ body{
 .section-title{font-size:17px;font-weight:900;color:var(--green);margin:4px 0 12px;display:flex;align-items:center;gap:6px}
 .empty{color:#a89e88;text-align:center;font-size:13px;padding:30px 0}
 small.muted{color:#a89e88}
-.walk-scene{position:absolute;inset:0;z-index:75;display:none;overflow:hidden;background:linear-gradient(180deg,#b9d99b 0%,#eaf3df 54%,#8fb36b 55%,#628653 100%);text-align:center}
+.walk-scene{position:absolute;inset:0;z-index:75;display:none;overflow:hidden;background:#10231a;text-align:center}
 .walk-scene.active{display:block;animation:walkSceneIn .25s ease-out}
-.walk-scene .sun{position:absolute;top:13%;right:16%;width:48px;height:48px;border-radius:50%;background:#f2c992;box-shadow:0 0 0 12px rgba(242,201,146,.22)}
-.walk-scene .mountain{position:absolute;left:-8%;right:-8%;bottom:43%;height:28%;background:#5f9565;clip-path:polygon(0 100%,18% 36%,30% 75%,48% 8%,67% 72%,84% 30%,100% 100%)}
-.walk-scene .path{position:absolute;left:-10%;right:-10%;bottom:-4%;height:52%;background:#c89a67;clip-path:polygon(42% 0,58% 0,91% 100%,9% 100%)}
-.walk-scene .walker{position:absolute;left:-120px;bottom:21%;width:112px;height:auto;animation:walkAcross 1.35s linear forwards}
-.walk-scene .walk-title{position:absolute;top:12%;left:0;right:0;color:#fff;font-size:20px;font-weight:900;text-shadow:0 2px 4px rgba(27,67,38,.35)}
-.walk-scene .walk-route{position:absolute;top:18%;left:0;right:0;color:#2e6b43;font-size:14px;font-weight:700}
+.walk-scene video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.walk-scene .walk-title{position:absolute;top:12%;left:0;right:0;color:#fff;font-size:20px;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.walk-scene .walk-route{position:absolute;top:18%;left:0;right:0;color:#fff;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6)}
 @keyframes walkSceneIn{from{opacity:0}to{opacity:1}}
-@keyframes walkAcross{from{transform:translateX(0) scale(.88)}to{transform:translateX(calc(100vw + 170px)) scale(1)}}
 </style>
 </head>
 <body>
@@ -301,12 +298,9 @@ small.muted{color:#a89e88}
 
   <div id="toast"></div>
   <div class="walk-scene" id="walkScene">
-    <div class="sun"></div>
-    <div class="mountain"></div>
-    <div class="path"></div>
+    <video id="walkVideo" src="assets/walk.mp4" muted autoplay playsinline webkit-playsinline preload="auto"></video>
     <div class="walk-title">小野人正在进山</div>
     <div class="walk-route" id="walkRoute"></div>
-    <img class="walker" src="assets/xiaoyeren.png" alt="小野人行走中">
   </div>
 </div>
 <script>
@@ -460,11 +454,22 @@ function nextDialogLine(){
   else text=line;
   $("dName").textContent=who;
   $("dText").innerHTML=esc(text).replace(/\n/g,"<br>");
-  $("dPortrait").innerHTML=portraitFor(who);
+  $("dPortrait").innerHTML=portraitFor(who,text);
   $("dHint").textContent=dialogQueue.length===0&&dialogOpts.length===0?"":"点击继续";
 }
-function portraitFor(who){
-  return `<div class="pava"></div>`;
+function portraitFor(who,text){
+  const em = emotionOf(text||"");
+  return `<div class="pava" style="background:url('assets/exp/${em}.png') center 22% / 280% no-repeat"></div>`;
+}
+function emotionOf(t){
+  if(/困|睡|歇|累|晚安|太阳落山|回屋/.test(t)) return "sleepy";
+  if(/谢|感谢|劳|辛苦/.test(t)) return "thanks";
+  if(/可惜|没带|歪了|扭捏|害羞|脸红/.test(t)) return "shy";
+  if(/摔|滑|雨|棘|挡|暗|突|惊|划伤|阵雨|荆棘|扑棱|沙沙/.test(t)) return "surprised";
+  if(/酸枣|尝|吃|咬|糕|酸甜|枣糕|出炉|咬一口/.test(t)) return "eating";
+  if(/\?|考虑|想要|要不要|想想|盘算|怎么|可惜/.test(t)) return "thinking";
+  if(/终于|好耶|棒|哈哈|熟了|出发|来吧|开工|加油|冲|集齐/.test(t)) return "cheering";
+  return "happy";
 }
 function renderOpts(){
   $("dOpts").innerHTML=dialogOpts.map((o,i)=>`<div class="opt" onclick="pickOpt(${i})">${esc(o.text)}</div>`).join("");
@@ -609,11 +614,13 @@ function goHome(){
 }
 function showWalkScene(routeName,next){
   $("walkRoute").textContent="前往："+routeName;
+  const v=$("walkVideo");
   $("walkScene").classList.add("active");
-  setTimeout(()=>{
-    $("walkScene").classList.remove("active");
-    next();
-  },1350);
+  try{ v.currentTime=0; v.play().catch(()=>{}); }catch(e){}
+  let done=false;
+  const finish=()=>{ if(done)return; done=true; $("walkScene").classList.remove("active"); next(); };
+  v.onended=finish;
+  setTimeout(finish, 2500);
 }
 function chooseRoute(idx){
   const r=routePool.find(x=>x.idx===idx);
