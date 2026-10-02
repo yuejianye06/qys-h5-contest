@@ -78,8 +78,8 @@ body{
 .badge{display:inline-block;background:var(--amber);color:var(--ink);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;margin:2px}
 /* ===== 对话框 galgame ===== */
 #dialog{
-  position:absolute;left:0;right:0;bottom:0;z-index:60;
-  display:none;flex-direction:column;padding:12px 12px 16px;
+  position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:60;
+  display:none;flex-direction:column;padding:12px;
 }
 #dialog.active{display:flex}
 #dialog .portrait{width:34px;height:34px;flex:0 0 34px;margin-left:6px;z-index:61}
@@ -87,6 +87,8 @@ body{
   background:rgba(255,253,246,.97);border:2px solid var(--green);
   border-radius:18px;padding:14px 14px 12px;box-shadow:0 -2px 16px rgba(0,0,0,.25);
   min-height:150px;display:flex;flex-direction:column;
+  /* 居中后高度上限：两侧各留 65px，确保顶部状态栏(52px)不被遮挡，超高时框内滚动 */
+  max-height:calc(100vh - 130px);overflow-y:auto;
 }
 #dialog .name{
   display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;font-weight:700;
